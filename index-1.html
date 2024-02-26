@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campo Minado</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .grid-container {
+    display: inline-grid;
+    grid-template-columns: repeat(10, 30px);
+  }
+  .cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #999;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div class="grid-container" id="grid"></div>
+<script>
+const gridSize = 10;
+const totalCells = gridSize * gridSize;
+let mines = Array.from({length: totalCells}, () => Math.random() < 0.1); // 10% chance of mines
+let revealed = Array(totalCells).fill(false);
+
+function renderGrid() {
+  const gridElement = document.getElementById('grid');
+  gridElement.innerHTML = '';
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.dataset.index = i;
+    cell.addEventListener('click', handleClick);
+    gridElement.appendChild(cell);
+  }
+}
+
+function handleClick(event) {
+  const index = parseInt(event.target.dataset.index);
+  if (mines[index]) {
+    event.target.textContent = '💣'; // Boom!
+    alert('Game Over!');
+    renderGrid(); // Reset the game
+    return;
+  }
+  revealCell(index);
+}
+
+function revealCell(index) {
+  if (revealed[index]) return;
+  revealed[index] = true;
+  const cell = document.querySelector(`.cell[data-index="${index}"]`);
+  let count = 0;
+  for (let i = Math.max(0, index - gridSize - 1); i <= Math.min(totalCells - 1, index + gridSize + 1); i++) {
+    if (mines[i]) count++;
+  }
+  if (count > 0) {
+    cell.textContent = count;
+  } else {
+    cell.style.backgroundColor = '#ccc';
+    for (let i = Math.max(0, index - gridSize - 1); i <= Math.min(totalCells - 1, index + gridSize + 1); i++) {
+      revealCell(i);
+    }
+  }
+}
+
+renderGrid();
+</script>
+</body>
+</html>
